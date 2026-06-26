@@ -84,7 +84,7 @@ public class UserController {
     }
 
     @GetMapping("/header/{fileName}")
-    public String getHeader(@PathVariable("fileName") String fileName, HttpServletResponse response){
+    public void getHeader(@PathVariable("fileName") String fileName, HttpServletResponse response){
         //服务器存放路径
         fileName=uploadPath+"/"+fileName;
         //文件后缀
@@ -104,6 +104,5 @@ public class UserController {
         } catch (IOException e) {
             logger.error("读取头像失败"+e.getMessage());
         }
-        return "site/setting";
     }
 }

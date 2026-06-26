@@ -69,10 +69,10 @@ public class SensetiveFilter {
 
     //公有方法会被外界调用,返回过滤之后的字符串
     public String filter(String text){
-        StringBuilder sb=new StringBuilder();
         if(!StringUtils.hasText(text)){
-            return null;
+            return text;
         }
+        StringBuilder sb=new StringBuilder();
         //声明三个指针，指向根节点，指向正在遍历的字符串第一位，最后一位
         TrieNode tempNode=rootNode;
         int begin=0;
@@ -103,9 +103,11 @@ public class SensetiveFilter {
                 position++;
             }
         }
+        // 将最后一段字符加入结果
+        if(begin < text.length()){
+            sb.append(text.substring(begin));
+        }
         return sb.toString();
-
-
     }
 
 
