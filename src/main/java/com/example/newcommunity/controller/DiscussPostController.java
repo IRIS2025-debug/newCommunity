@@ -108,7 +108,7 @@ public class DiscussPostController {
                 commentVo.put("user",userService.findUserById(comment.getUserId()));
                 //评论的评论
                 List<Comment> replyList=commentService.findCommentsByEntity(
-                        comment.getEntityType(), comment.getId(), 0, Integer.MAX_VALUE);
+                        2, comment.getId(), 0, Integer.MAX_VALUE);
                 List<Map<String,Object>> replyVoList=new ArrayList<>();
                 //将评论的评论转换为Map对象(类似于JSON数组),方便在前端渲染
                 if(replyList!=null){

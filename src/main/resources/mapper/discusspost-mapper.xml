@@ -41,4 +41,9 @@
         </if>
     </select>
 
+    <update id="updateCommentCount" parameterType="DiscussPost">
+        update discuss_post
+        set comment_count = #{commentCount}
+        where id = #{id}
+    </update>
 </mapper>

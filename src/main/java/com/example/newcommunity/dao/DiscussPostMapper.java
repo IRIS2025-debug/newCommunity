@@ -17,4 +17,5 @@ public interface DiscussPostMapper {
     //增加帖子的方法
     int insertDiscussPost(DiscussPost discussPost);
 
+    int updateCommentCount(@Param("id") int id, @Param("commentCount") int commentCount);
 }
