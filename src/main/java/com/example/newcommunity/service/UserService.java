@@ -160,6 +160,10 @@ public class UserService {
         userMapper.updateHeader(userId, headerUrl);
     }
 
+    public User findUserByName(String username) {
+        return userMapper.selectByName(username);
+    }
+
 }
 
 
