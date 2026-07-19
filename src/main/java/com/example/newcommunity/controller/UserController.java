@@ -2,6 +2,7 @@ package com.example.newcommunity.controller;
 
 import com.example.newcommunity.annotation.LoginRequired;
 import com.example.newcommunity.entity.User;
+import com.example.newcommunity.service.LikeService;
 import com.example.newcommunity.service.UserService;
 import com.example.newcommunity.util.CommunityUtil;
 import com.example.newcommunity.util.HostHolder;
@@ -13,10 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -44,6 +42,9 @@ public class UserController {
 
     @Autowired
     private HostHolder hostHolder;
+
+    @Autowired
+    private LikeService likeService;
 
     @LoginRequired
     @GetMapping("/setting")
@@ -84,7 +85,7 @@ public class UserController {
     }
 
     @GetMapping("/header/{fileName}")
-    public void getHeader(@PathVariable("fileName") String fileName, HttpServletResponse response){
+    public void getHeader(@PathVariable String fileName, HttpServletResponse response){
         //服务器存放路径
         fileName=uploadPath+"/"+fileName;
         //文件后缀
@@ -105,4 +106,22 @@ public class UserController {
             logger.error("读取头像失败"+e.getMessage());
         }
     }
+
+    //个人主页
+    @RequestMapping(path="/profile/{userId}",method= RequestMethod.GET)
+    public String getProfilePage(@PathVariable int userId, Model model){
+        User user=userService.findUserById(userId);
+        if(user==null){
+            throw new RuntimeException("该用户不存在");
+        }
+
+        //用户
+        model.addAttribute("user",user);
+        //点赞数量
+        int likeCount=likeService.findUserLikeCount(userId);
+        model.addAttribute("likeCount",likeCount);
+
+        return "site/profile";
+    }
+
 }
