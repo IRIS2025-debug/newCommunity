@@ -132,7 +132,7 @@ public class UserController {
         model.addAttribute("followeeCount",followeeCount);
 
         //粉丝数量
-        long followerCount=followService.findFollowerCount(userId,ENTITY_TYPE_USER);
+        long followerCount=followService.findFollowerCount(ENTITY_TYPE_USER,userId);
         model.addAttribute("followerCount",followerCount);
 
         //是否已关注
