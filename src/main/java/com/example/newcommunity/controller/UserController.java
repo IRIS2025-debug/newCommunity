@@ -2,6 +2,7 @@ package com.example.newcommunity.controller;
 
 import com.example.newcommunity.annotation.LoginRequired;
 import com.example.newcommunity.entity.User;
+import com.example.newcommunity.service.FollowService;
 import com.example.newcommunity.service.LikeService;
 import com.example.newcommunity.service.UserService;
 import com.example.newcommunity.util.CommunityUtil;
@@ -21,6 +22,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+
+import static com.example.newcommunity.util.CommunityConstant.ENTITY_TYPE_USER;
 
 @Controller
 @RequestMapping("/user")
@@ -45,6 +48,9 @@ public class UserController {
 
     @Autowired
     private LikeService likeService;
+
+    @Autowired
+    private FollowService followService;
 
     @LoginRequired
     @GetMapping("/setting")
@@ -121,7 +127,24 @@ public class UserController {
         int likeCount=likeService.findUserLikeCount(userId);
         model.addAttribute("likeCount",likeCount);
 
+        //关注数量
+        long followeeCount=followService.findFolloweeCount(userId,ENTITY_TYPE_USER);
+        model.addAttribute("followeeCount",followeeCount);
+
+        //粉丝数量
+        long followerCount=followService.findFollowerCount(userId,ENTITY_TYPE_USER);
+        model.addAttribute("followerCount",followerCount);
+
+        //是否已关注
+        boolean hasFollowed=false;
+        if(hostHolder.getUser()!=null){
+            hasFollowed=followService.hasFollowed(hostHolder.getUser().getId(),ENTITY_TYPE_USER,userId);
+        }
+        model.addAttribute("hasFollowed",hasFollowed);
+
         return "site/profile";
     }
+
+
 
 }
