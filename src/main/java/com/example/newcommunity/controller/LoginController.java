@@ -3,6 +3,8 @@ package com.example.newcommunity.controller;
 import com.example.newcommunity.entity.User;
 import com.example.newcommunity.service.UserService;
 import com.example.newcommunity.util.CommunityConstant;
+import com.example.newcommunity.util.CommunityUtil;
+import com.example.newcommunity.util.RedisKeyUtil;
 import com.google.code.kaptcha.Producer;
 import io.micrometer.common.util.StringUtils;
 import jakarta.servlet.http.Cookie;
@@ -12,6 +14,7 @@ import org.mybatis.logging.Logger;
 import org.mybatis.logging.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CookieValue;
@@ -23,6 +26,7 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @Controller
 public class LoginController {
@@ -34,6 +38,9 @@ public class LoginController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private RedisTemplate<String,Object> redisTemplate;
 
     @Autowired
     private Producer kaptcha;
@@ -88,7 +95,17 @@ public class LoginController {
         String text=kaptcha.createText();
         BufferedImage image=kaptcha.createImage(text);
 
-        session.setAttribute("kaptchaText",text);
+        //session.setAttribute("kaptchaText",text);
+        //验证码的归属
+        String kaptchaOwner= CommunityUtil.generateUUID();
+        Cookie cookie=new Cookie("kaptchaOwner",kaptchaOwner);
+        cookie.setMaxAge(60);
+        cookie.setPath(contextPath);
+        response.addCookie(cookie);
+        //将验证码写入redis
+        String redisKey= RedisKeyUtil.getKaptchaKey(kaptchaOwner);
+        redisTemplate.opsForValue().set(redisKey,text,60, TimeUnit.SECONDS);
+
         response.setContentType("image/png");
         try{
             ImageIO.write(image,"png",response.getOutputStream());
@@ -98,9 +115,17 @@ public class LoginController {
     }
 
     @PostMapping("/login")
-    public String login(String username,String password,String code,boolean rememberMe,Model model,HttpSession session,HttpServletResponse response){
-        if(StringUtils.isBlank(username)||StringUtils.isBlank(password)||StringUtils.isBlank(code)){
-            model.addAttribute("msg","用户名、密码、验证码不能为空");
+    public String login(String username,String password,String code,boolean rememberMe,Model model,
+                        HttpSession session,HttpServletResponse response,
+                        @CookieValue("kaptchaOwner")String kaptchaOwner){
+        //从redis中获取验证码
+        String kaptcha=null;
+        if(kaptchaOwner!=null){
+            String redisKey=RedisKeyUtil.getKaptchaKey(kaptchaOwner);
+            kaptcha=(String) redisTemplate.opsForValue().get(redisKey);
+        }
+        if(StringUtils.isBlank(kaptcha)||StringUtils.isBlank(code)||!kaptcha.equals(code)){
+            model.addAttribute("codeMsg","验证码错误");
             model.addAttribute("target","/login");
             return "/site/login";
         }

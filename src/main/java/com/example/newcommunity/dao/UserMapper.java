@@ -2,7 +2,6 @@ package com.example.newcommunity.dao;
 
 import com.example.newcommunity.entity.User;
 import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Select;
 
 @Mapper
 public interface UserMapper {
@@ -12,5 +11,5 @@ public interface UserMapper {
     int insertUser(User user);
 
     void updateStatus(int id,int status);
-    void updateHeader(int id,String headerUrl);
+    int updateHeader(int id, String headerUrl);
 }
