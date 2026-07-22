@@ -1,7 +1,9 @@
 package com.example.newcommunity.controller;
 
+import com.example.newcommunity.entity.Event;
 import com.example.newcommunity.entity.Page;
 import com.example.newcommunity.entity.User;
+import com.example.newcommunity.event.EventProducer;
 import com.example.newcommunity.service.FollowService;
 import com.example.newcommunity.service.UserService;
 import com.example.newcommunity.util.CommunityUtil;
@@ -18,11 +20,15 @@ import java.util.List;
 import java.util.Map;
 
 import static com.example.newcommunity.util.CommunityConstant.ENTITY_TYPE_USER;
+import static com.example.newcommunity.util.CommunityConstant.TOPIC_FOLLOW;
 
 @Controller
 public class FollowController {
     @Autowired
     private FollowService followService;
+
+    @Autowired
+    private EventProducer eventProducer;
 
     @Autowired
     private HostHolder hostHolder;
@@ -35,6 +41,15 @@ public class FollowController {
     public String follow(int entityType,int entityId){
         User user=hostHolder.getUser();
         followService.follow(user.getId(),entityType,entityId);
+
+        //触发关注事件
+        Event event = new Event().setTopic(TOPIC_FOLLOW)
+                .setUserId(user.getId())
+                .setEntityType(entityType)
+                .setEntityId(entityId)
+                .setEntityUserId(entityId);
+        eventProducer.fireEvent(event);
+
         return CommunityUtil.getJSONString(0,"已关注");
     }
 
