@@ -2,9 +2,14 @@ package com.example.newcommunity.service;
 
 import com.example.newcommunity.dao.MessageMapper;
 import com.example.newcommunity.entity.Message;
+import com.example.newcommunity.entity.User;
+import com.example.newcommunity.util.CommunityConstant;
+import com.example.newcommunity.util.HostHolder;
 import com.example.newcommunity.util.SensetiveFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.util.HtmlUtils;
 
 import java.util.List;
@@ -16,6 +21,7 @@ public class MessageService {
 
     @Autowired
     private SensetiveFilter sensetiveFilter;
+
 
     public List<Message> findConversations(int userId, int offset, int limit){
         return messageMapper.selectConversations(userId,offset,limit);
@@ -47,6 +53,23 @@ public class MessageService {
     public int readMessage(List<Integer> ids){
         return messageMapper.updateStatus(ids,1);
     }
+
+    public Message findLatestMessage(int userId,String topic){
+        return messageMapper.selectLatestNotice(userId,topic);
+    }
+
+    public int findNoticeCount(int userId,String topic){
+        return messageMapper.selectNoticeCount(userId,topic);
+    }
+
+    public int findNoticeUnreadCount(int userId,String topic) {
+        return messageMapper.selectNoticeUnreadCount(userId, topic);
+    }
+
+    public List<Message> findNotices(int userId,String topic,int offset,int limit){
+        return messageMapper.selectNotices(userId,topic,offset,limit);
+    }
+
 
 }
 
